@@ -15,6 +15,103 @@ Write an algorithm that creates a perceptron model:
 
 
 ```python
+import random
+import math
+from nltk.corpus import movie_reviews
+```
+
+
+```python
+reviews = [(list(movie_reviews.words(fileid)), category)
+              for category in movie_reviews.categories()
+              for fileid in movie_reviews.fileids(category)]
+```
+
+
+```python
+words = []
+for file_id in movie_reviews.fileids():
+    review = movie_reviews.words(file_id)
+    for word in review:
+        words.append(word)
+```
+
+
+```python
+all_features = list(set(words))
+```
+
+
+```python
+start_weights = {word : random.uniform(-1, 1) for word in all_features}
+```
+
+
+```python
+def create_features(review):
+    return list(set([word for word in review]))
+```
+
+
+```python
+def predict_one(weights, features):
+    
+    score = 0
+    for feature in features:
+        
+        if feature in weights.keys():
+            score += weights[feature]
+    
+    if score > 0:
+        return 'pos'
+    else:
+        return 'neg'
+```
+
+
+```python
+def update_weights(weights, features, actual_label):
+    
+    if actual_label == 'pos':
+        change = 1
+    else:
+        change = -1
+        
+    for feature in features:
+        
+        if feature in weights.keys():
+            weights[feature] += change
+        
+    return weights
+```
+
+
+```python
+def train_perceptron(training_data, itterations):
+    weights = start_weights
+    
+    for i in range(itterations):
+        
+        for review, actual_label in training_data:
+            
+            features = create_features(review)
+            predicted_label = predict_one(weights, features)
+            
+            if predicted_label != actual_label:
+                weights = update_weights(weights, features, actual_label)
+    
+    return weights
+```
+
+
+```python
+trained_weights = train_perceptron(reviews, 5)
+```
+
+
+```python
+trained_weights
+```
 
 
 
@@ -1042,12 +1139,21 @@ test_size = len_reviews - train_size
 
 train_index = random.sample(range(len_reviews), train_size)
 test_index = list(set(range(len_reviews)) - set(train_index))
+```
 
+
+```python
 train = [reviews[i] for i in train_index]
 test = [reviews[i] for i in test_index]
+```
 
+
+```python
 trained_weights = train_perceptron(train, 5)
+```
 
+
+```python
 def predict_all(weights, reviews):
     predicted_labels = []
     for review, label in reviews:
@@ -1055,10 +1161,16 @@ def predict_all(weights, reviews):
         predicted_label = predict_one(weights, features)
         predicted_labels.append(predicted_label)
     return predicted_labels
+```
 
+
+```python
 predicted_labels = predict_all(trained_weights, test)
 actual_labels = [label for review, label in test]
+```
 
+
+```python
 n_correct = sum([predicted_labels[i] == actual_labels[i] for i in range(test_size)])
 n_correct/test_size
 ```
